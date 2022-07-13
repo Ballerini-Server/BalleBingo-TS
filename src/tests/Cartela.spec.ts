@@ -23,6 +23,14 @@ describe('Cartela', () => {
     }))
   })
 
+  it('should return update confirmed values on getPosition', () => {
+    const cartela = new Cartela('fake-user-id');
+
+    cartela.getPosition(8)
+
+    expect(cartela.getConfirmed).toEqual(expect.arrayContaining([8]))
+  })
+
   it('should throw UserDoesNotHaveNumberException when user does not have the passed value', () => {
     const cartela = new Cartela('fake-user-id');
 

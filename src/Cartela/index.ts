@@ -12,11 +12,16 @@ export class Cartela {
    */
   private values: Table;
   /**
+   * Valores que o usuário confirmou
+   */
+  private confirmedValues: number[];
+  /**
    * Id do dono da cartela
    */
   private userId: string;
   constructor(userId: string) {
     this.userId = userId;
+    this.confirmedValues = [];
     this.values = getFormatedTableNumbers();
   }
   /**
@@ -24,6 +29,12 @@ export class Cartela {
    */
   get getValues() {
     return this.values;
+  }
+  /**
+   * Devolve os valores confirmados da cartela do usuário
+   */
+  get getConfirmed() {
+    return this.confirmedValues;
   }
 
   /**
@@ -46,6 +57,8 @@ export class Cartela {
 
         if (columnIndex < 0 && !result)
           return undefined
+        if (row[columnIndex])
+          this.confirmedValues.push(Number(row[columnIndex]));
         return { rowIndex, columnIndex }
       }, undefined)
     if (!result) throw new UserDoesNotHaveNumberException(value);
