@@ -1,7 +1,7 @@
 import fs from 'fs';
 
-import { Cartela } from "../Cartela";
-import { FabricaDeCartela } from "../FabricaDeCartela";
+import { Card } from "../structures/Card";
+import { cardFactory } from "../utils/cardFactory/cardFactory";
 
 const table = [
   [2, 5, 6, 8, 9],
@@ -17,13 +17,13 @@ jest.mock('../utils/RandomValues/getFormatedTableNumbers', () => ({
 
 describe('FabricaDeCartela', () => {
     it('should return value position', async() => {
-        const cartela = new Cartela('fake-user-id');
+        const cartela = new Card('fake-user-id');
 
         Object.defineProperty(cartela, 'getConfirmed', {
             get: () => [2, 9, 16, 37, 60],
         });
 
-        FabricaDeCartela(cartela).then(buffer => {
+        cardFactory(cartela).then(buffer => {
             fs.writeFileSync('cartela.png', buffer);
         });
     });
