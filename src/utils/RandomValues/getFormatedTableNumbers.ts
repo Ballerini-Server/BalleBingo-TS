@@ -1,7 +1,7 @@
 import { getManyRandomNumbers } from "./getManyRandomNumbers";
 
 export type Rows = (number | null)[];
-export type Table = Rows[]
+export type Table = Rows[];
 
 export function getFormatedTableNumbers() {
   const randomNumbers = getManyRandomNumbers(25);
@@ -10,8 +10,7 @@ export function getFormatedTableNumbers() {
   return sortedList.reduce((accumulator, number, index) => {
     const column = index % 5;
     const line = Math.floor(index / 5);
-    if (!accumulator[line])
-      accumulator[line] = [];
+    if (!accumulator[line]) accumulator[line] = [];
     if (index === 12) {
       accumulator[line][column] = null;
       return accumulator;
@@ -19,5 +18,5 @@ export function getFormatedTableNumbers() {
     accumulator[line][column] = number;
 
     return accumulator;
-  }, [] as Table)
+  }, [] as Table);
 }
