@@ -1,11 +1,13 @@
-import { Card, NumberPosition } from './Card';
-import { getRandomNumber } from '../utils/RandomValues/randomNumber';
+import { Card, NumberPosition } from "./Card";
+import { getRandomNumber } from "../utils/RandomValues/randomNumber";
 import {
   InvalidRemoveValuesException,
   NotEnoughtSortedNumbersException,
   UserAlreadyHasCartelaException,
   UserDoesNotHaveCartelaException,
-} from './Errors/errors';
+} from "./Errors/errors";
+
+import crypto from "crypto";
 
 export class BingoGame {
   /**
@@ -20,37 +22,42 @@ export class BingoGame {
     return BingoGame.instance;
   }
 
-  constructor(premio = '') {
-    this.premio = premio;
-    this.users = new Map();
-    this.sorted = [];
-  }
-
-  restart(premio: string) {
-    this.sorted = [];
-    this.premio = premio;
-    this.users = new Map();
-  }
-
-  /**
-   * Nome do premio
-   */
   premio?: string;
-  /**
-   * Map contento as cartelas dos ususários
-   */
+
+  bingoInitiazed: boolean = false;
+
+  numberCountToBingo: number = 24;
+
+  tokenGame: string = crypto.randomUUID();
+
   private users: Map<string, Card>;
-  /**
-   * Lista de números sortidos
-   */
+
   private sorted: number[];
 
-  /**
-   * Sorteia um novo número
-   * @returns O novo número sorteado
-   */
+  constructor(premio?: string) {
+    this.users = new Map();
+    this.sorted = [];
+    this.bingoInitiazed = false;
+    this.premio = premio;
+    this.tokenGame = crypto.randomUUID();
+  }
+
+  exit() {
+    this.premio = "";
+    this.users = new Map();
+    this.sorted = [];
+    this.bingoInitiazed = false;
+    this.tokenGame = "";
+  }
+  get getTokenGame() {
+    return this.tokenGame;
+  }
+
   sortNumber() {
     let newSorted: number;
+    if (this.sorted.length === 75) {
+      throw new Error("todos os números foram sorteados!");
+    }
     do {
       newSorted = getRandomNumber();
     } while (this.sorted.includes(newSorted));
@@ -58,13 +65,6 @@ export class BingoGame {
     return newSorted;
   }
 
-  /**
-   * Cria uma cartela para um userId e registra no jogo
-   * @param userId Id do usuário para criar uma cartela
-   * @returns a cartela do usuário
-   *
-   * @throws {UserAlreadyHasCartelaException} Usuário já possui um cartela
-   */
   createCard(userId: string): Card {
     if (this.users.get(userId)) throw new UserAlreadyHasCartelaException();
     const cartela = new Card(userId);
@@ -72,65 +72,59 @@ export class BingoGame {
     return cartela;
   }
 
-  /**
-   * Valida se o usuário realmente completou o bingo
-   * @param userId Id do ususário que disse bingo
-   *
-   * @throws {UserDoesNotHaveNumberException} Usuário não possui esse número na cartela
-   * @throws {UserDoesNotHaveCartelaException} Usuário ainda não tem uma cartela
-   * @throws {NotEnoughtSortedNumbersException} Não há números suficientes para bingo
-   */
   bingo(userId: string): boolean {
     const cartela = this.users.get(userId);
 
     if (!cartela) throw new UserDoesNotHaveCartelaException();
 
-    if (this.sorted.length < 24) throw new NotEnoughtSortedNumbersException();
+    if (this.sorted.length < this.numberCountToBingo)
+      throw new NotEnoughtSortedNumbersException();
 
-    if (cartela.getConfirmed.length == 24) {
+    if (cartela.getConfirmed.length >= this.numberCountToBingo) {
       return true;
     }
 
     return false;
   }
 
-  /**
-   * Remove um número que o usuário informou
-   * @param userId Id do usuário para remover o número
-   * @param value número para remover da cartela
-   * @returns A posição que deve ser removida
-   *
-   * @throws {InvalidRemoveValuesException} Valor para remover ainda não foi sorteado
-   * @throws {UserDoesNotHaveCartelaException} Usuário ainda não tem uma cartela
-   * @throws {UserDoesNotHaveNumberException} Usuário não possui esse número na cartela
-   */
-  confirmNumberOnList(userId: string, value: number): NumberPosition {
+  gameInitialized() {
+    return this.bingoInitiazed;
+  }
+
+  confirmNumberOnList(userId: string, value: number): boolean {
     if (!this.sorted.includes(value)) throw new InvalidRemoveValuesException();
 
     const cartela = this.users.get(userId);
 
     if (!cartela) throw new UserDoesNotHaveCartelaException();
 
-    return cartela.getPosition(value);
+    try {
+      const position = cartela.getPosition(value);
+    } catch {
+      return false;
+    }
+
+    return true;
   }
 
-  /**
-   * Retorna o nome do premio
-   */
+  setPremio(premio: string) {
+    this.premio = premio;
+    this.bingoInitiazed = true;
+  }
+
   get getPremio() {
     return this.premio;
   }
 
-  /**
-   * Retorna o map com os usuários registrados no bingo
-   */
   get getUsers() {
     return this.users;
   }
 
-  /**
-   * Retorna os números sorteados até o momento
-   */
+  getUser(userId: string) {
+    const cardUser = this.users.get(userId);
+    return cardUser;
+  }
+
   get getSortedNumbers() {
     return this.sorted;
   }
