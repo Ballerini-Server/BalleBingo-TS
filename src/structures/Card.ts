@@ -44,7 +44,7 @@ export class Card {
         const columnIndex = row.findIndex((number) => number === value);
 
         if (columnIndex < 0 && !result) return undefined;
-        if (row[columnIndex])
+        if (row[columnIndex] && !this.confirmedValues.includes(row[columnIndex]))
           this.confirmedValues.push(Number(row[columnIndex]));
         return { rowIndex, columnIndex };
       },
